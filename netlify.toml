@@ -1,0 +1,50 @@
+# ==============================================================================
+# Netlify Deployment Configuration Profile
+# Project: fedha
+# Target Framework: Vite (React Single Page Application)
+# Routing Engine: Client-side routing fallback configuration
+# ==============================================================================
+
+[build]
+  # The directory containing the core application code and package.json
+  base = ""
+
+  # The command executed to compile the production bundle
+  command = "npm run build"
+
+  # The directory where Vite outputs production-ready compiled assets
+  publish = "dist"
+
+[build.environment]
+  # Matches the node environment runtime seen in your Netlify build log
+  NODE_VERSION = "22.22.3"
+  NPM_VERSION = "10.9.8"
+
+# ==============================================================================
+# Single Page Application (SPA) Redirection Rules
+# ==============================================================================
+# This rule intercepts all incoming HTTP requests to deep paths (e.g., /dashboard).
+# Instead of returning a server-side 404, Netlify rewrites the request internally 
+# to serve index.html with a 200 Success status code so the client-side router takes over.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
+
+# ==============================================================================
+# HTTP Security and Cache Control Headers
+# ==============================================================================
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Cache tuning for hashed Vite production assets (JS/CSS inside assets/)
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
