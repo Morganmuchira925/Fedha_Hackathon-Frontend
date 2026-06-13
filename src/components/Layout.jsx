@@ -1,154 +1,188 @@
-import { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
+import { UserButton } from "@clerk/clerk-react";
 import { Wallet, Sun, Moon } from "lucide-react";
 import { NAV_ITEMS, THEME_STYLES } from "../constants";
-import { buildHealth } from "../utils";
 
-export default function Layout({ children, darkMode, setDarkMode, summary, initialData }) {
+export default function Layout({ children, darkMode, setDarkMode }) {
   const location = useLocation();
-  const { healthScore, healthLabel, healthColor } = buildHealth(summary, initialData);
 
   return (
     <div className={`app-theme-container ${darkMode ? "theme-dark" : "theme-light"}`}>
+      {/* Global CSS Overrides for Responsive Behavior and Tooltips */}
+      <style>{`
+        ${THEME_STYLES}
+        
+        /* Tooltip Core Styling */
+        .nav-tooltip {
+          position: relative;
+        }
+        .nav-tooltip::after {
+          content: attr(data-label);
+          position: absolute;
+          bottom: -2.2rem;
+          left: 50%;
+          transform: translateX(-50%) scale(0.85);
+          background: var(--bg-secondary);
+          color: var(--text-primary);
+          border: 0.0625rem solid var(--border-color);
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.375rem;
+          font-size: 0.75rem;
+          white-space: nowrap;
+          opacity: 0;
+          pointer-events: none;
+          transition: transform 0.15s ease, opacity 0.15s ease;
+          box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.15);
+          z-index: 10;
+        }
+        .nav-tooltip:hover::after {
+          opacity: 1;
+          transform: translateX(-50%) scale(1);
+        }
+
+        /* Responsive Breakpoints using rem */
+        @media (max-width: 48rem) { /* ~768px Tablet down */
+          .brand-text {
+            display: none !important;
+          }
+          .nav-link-text {
+            display: none !important;
+          }
+          .nav-container {
+            gap: 0.5rem !important;
+          }
+          .navbar-wrapper {
+            padding: 0.5rem 0.75rem !important;
+          }
+        }
+
+        @media (max-width: 30rem) { /* ~480px Mobile down */
+          .navbar-wrapper {
+            flex-direction: row !important;
+            justifyContent: space-between !important;
+          }
+        }
+      `}</style>
+
       <div style={{
         fontFamily: "var(--font-sans)",
-        padding: "1.5rem 1.5rem 3rem",
-        maxWidth: 720,
+        padding: "1rem 1rem 3rem",
+        maxWidth: "47.5rem", /* 760px */
         margin: "0 auto",
         minHeight: "100vh",
         color: "var(--text-primary)",
         background: "var(--bg-primary)",
-        transition: "background 0.2s frame, color 0.2s",
+        transition: "background 0.2s ease, color 0.2s ease",
       }}>
-        <h2 className="sr-only">Fedha — Financial Health Dashboard for informal traders</h2>
-
-        {/* Brand Header */}
-        <div style={{
+        
+        {/* Combined Unified Navbar Wrapper */}
+        <nav className="navbar-wrapper" style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          paddingBottom: "1.25rem",
-          borderBottom: "1px solid var(--border-color)",
-          marginBottom: "1.5rem",
+          padding: "0.625rem 0.875rem", /* 10px 14px */
+          background: "var(--bg-secondary)",
+          border: "0.0625rem solid var(--border-color)",
+          borderRadius: "1rem", /* 16px */
+          marginBottom: "2rem",
+          gap: "1rem",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{
-              width: 40,
-              height: 40,
-              borderRadius: 10,
-              background: "#1D9E75",
-              display: "flex",
-              alignItems: "center",
-              justifyItems: "center",
-              justifyContent: "center",
-              color: "#fff",
+          
+          {/* Brand Identity */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
+            <div style={{ 
+              width: "2.125rem", /* 34px */
+              height: "2.125rem", 
+              borderRadius: "0.5rem", /* 8px */
+              background: "#1D9E75", 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center", 
+              color: "#fff" 
             }}>
-              <Wallet className="w-5 h-5" />
+              <Wallet style={{ width: "1.125rem", height: "1.125rem" }} />
             </div>
-            <div>
-              <p style={{
-                fontWeight: 700,
-                fontSize: 18,
-                margin: 0,
-                trackingTight: "-0.025em",
-              }}>FedhaJamii</p>
-            </div>
+            <span className="brand-text" style={{ fontWeight: 700, fontSize: "1rem", letterSpacing: "-0.01em" }}>
+              FedhaJamii
+            </span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            {/* Dark Mode Control Toggle button */}
+          {/* Centered Pill Navigation Links */}
+          <div className="nav-container" style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.375rem", /* 6px */
+            background: "var(--bg-primary)",
+            padding: "0.25rem", /* 4px */
+            borderRadius: "0.75rem", /* 12px */
+            border: "0.0625rem solid var(--border-color)",
+          }}>
+            {NAV_ITEMS?.map(({ key, label, Icon }) => {
+              const targetPath = key === "dashboard" ? "/dashboard" : `/dashboard/${key}`;
+              const isActive = location.pathname === targetPath || location.pathname.startsWith(`${targetPath}/`);
+
+              return (
+                <Link
+                  key={key}
+                  to={targetPath}
+                  className="nav-tooltip"
+                  data-label={label}
+                  style={{
+                    padding: "0.375rem 0.75rem", /* 6px 12px */
+                    fontSize: "0.78rem",
+                    textDecoration: "none",
+                    fontWeight: isActive ? 600 : 500,
+                    color: isActive ? "#fff" : "var(--text-secondary)",
+                    background: isActive ? "#1D9E75" : "transparent",
+                    borderRadius: "0.5rem", /* 8px */
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.375rem",
+                    transition: "all 0.15s ease"
+                  }}
+                >
+                  <Icon style={{ width: "0.875rem", height: "0.875rem" }} />
+                  <span className="nav-link-text">{label}</span>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Action Tools & Profile Controls */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
             <button
               onClick={() => setDarkMode(!darkMode)}
               style={{
-                background: "var(--bg-secondary)",
-                border: "1px solid var(--border-color)",
-                padding: "8px",
-                borderRadius: "50%",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                background: "var(--bg-primary)", 
+                border: "0.0625rem solid var(--border-color)",
+                padding: "0.4375rem", /* 7px */
+                borderRadius: "50%", 
+                cursor: "pointer", 
+                display: "flex", 
                 color: "var(--text-secondary)",
+                alignItems: "center",
+                justifyContent: "center"
               }}
-              title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
-              {darkMode ? (
-                <Sun className="w-4 h-4 text-amber-400" />
-              ) : (
-                <Moon className="w-4 h-4" />
-              )}
+              {darkMode ? <Sun style={{ width: "0.875rem", height: "0.875rem" }} className="text-amber-400" /> : <Moon style={{ width: "0.875rem", height: "0.875rem" }} />}
             </button>
-            <div style={{
-              display: "flex",
+
+            <div style={{ 
+              display: "flex", 
               alignItems: "center",
-              gap: 6,
-              background: "var(--bg-secondary)",
-              padding: "6px 12px",
-              borderRadius: 20,
-              border: "1px solid var(--border-color)",
+              borderLeft: "0.0625rem solid var(--border-color)",
+              paddingLeft: "0.75rem",
+              height: "1.5rem"
             }}>
-              <div style={{
-                height: 8,
-                width: 8,
-                borderRadius: "50%",
-                background: healthColor,
-                shrink: 0,
-              }} />
-              <span style={{
-                fontSize: 12,
-                fontWeight: 600,
-                color: healthColor,
-              }}>{healthLabel}</span>
+              <UserButton afterSignOutUrl="/" />
             </div>
           </div>
-        </div>
+        </nav>
 
-        {/* Layout Navigation Tabs */}
-        <div style={{
-          display: "flex",
-          gap: 4,
-          marginBottom: "1.5rem",
-          borderBottom: "1px solid var(--border-color)",
-          overflowX: "auto",
-        }}>
-          {NAV_ITEMS.map(({ key, label, Icon }) => {
-            const isActive = location.pathname === `/${key}` || (key === "dashboard" && location.pathname === "/");
-            return (
-              <Link
-                key={key}
-                to={key === "dashboard" ? "/" : `/${key}`}
-                style={{
-                  background: "none",
-                  border: "none",
-                  padding: "10px 16px",
-                  fontSize: 13,
-                  fontWeight: isActive ? 600 : 500,
-                  color: isActive ? "var(--accent-color)" : "var(--text-secondary)",
-                  borderBottom: isActive ? "2px solid var(--accent-color)" : "2px solid transparent",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  whiteSpace: "nowrap",
-                  marginBottom: -1,
-                  transition: "color 0.15s, border-color 0.15s",
-                  textDecoration: "none",
-                }}
-              >
-                <Icon className="w-4 h-4" />
-                {label}
-              </Link>
-            );
-          })}
-        </div>
-
-        {/* Page content */}
-        <div style={{ animation: "fadeIn 0.2s ease" }}>
+        {/* Interior Page Render Target */}
+        <div style={{ animation: "fadeIn 0.2s ease", padding: "0 0.25rem" }}>
           {children}
         </div>
-
-        {/* CSS Custom Injectors representing configuration scopes */}
-        <style>{THEME_STYLES}</style>
       </div>
     </div>
   );

@@ -182,3 +182,273 @@
     border-right-color: var(--border);
   }
 }
+
+/*Auth Page styling starts here*/
+/* Fullscreen Wrapper with atmospheric backdrop image */
+.fedha-auth-wrapper {
+  min-height: 100vh;
+  width: 100vw;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Base flex-grid layout */
+.fedha-auth-container {
+  width: 100%;
+  max-width: 1200px;
+  min-height: 85vh;
+  padding: 2rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
+}
+
+/* Brand display configuration */
+.fedha-auth-brand-pane {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.fedha-logo-badge {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.fedha-logo-dot {
+  color: #a855f7;
+}
+
+.fedha-hero-title {
+  font-size: 3.25rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.5rem;
+}
+
+/* The neon accent text gradient rule */
+.fedha-gradient-text {
+  background: linear-gradient(to right, #c084fc, #e879f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.fedha-hero-subtitle {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: #9ca3af;
+  max-width: 520px;
+  margin-bottom: 4rem;
+}
+
+.fedha-auth-footer-links {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.fedha-auth-footer-links a {
+  color: #6b7280;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.fedha-auth-footer-links a:hover {
+  color: #9ca3af;
+}
+
+/* Form pane container */
+.fedha-auth-form-pane {
+  flex: 0.9;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.fedha-clerk-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Under-card simple route switcher text matching the UI design */
+.fedha-toggle-route-text {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #9ca3af;
+}
+
+.fedha-toggle-route-text button {
+  background: none;
+  border: none;
+  color: #c084fc;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0 0.25rem;
+  transition: color 0.2s;
+}
+
+.fedha-toggle-route-text button:hover {
+  color: #e879f9;
+}
+
+/* Responsive breakout rules for tablets/phones */
+@media (max-width: 968px) {
+  .fedha-auth-container {
+    flex-direction: column;
+    justify-content: center;
+    gap: 3rem;
+    padding: 3rem 1.5rem;
+  }
+  
+  .fedha-auth-brand-pane {
+    align-items: center;
+    text-align: center;
+    flex: none;
+  }
+
+  .fedha-hero-title {
+    font-size: 2.25rem;
+  }
+
+  .fedha-hero-subtitle {
+    margin-bottom: 2rem;
+  }
+
+  .fedha-auth-footer-links {
+    display: none; /* Hide bottom links on small viewports to save vertical space */
+  }
+
+  .fedha-auth-form-pane {
+    flex: none;
+  }
+}
+
+
+/* ==========================================================================
+   CLERK GLASSMORPHISM COHESION OVERRIDES
+   ========================================================================== */
+
+/* 1. Forces the main container background to completely drop its flat color */
+/* .cl-card, 
+.cl-rootBox,
+[data-category="clerk"] .cl-card {
+  background-color: rgba(18, 16, 26, 0.65) !important;
+  backdrop-filter: blur(24px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+}
+
+/* 2. COMPLETELY KILLS THE BLACK FOOTER BLOCK */
+.cl-footer,
+.cl-footerAction,
+div[class*="cl-footer"] {
+  background-color: transparent !important;
+  background-image: none !important;
+  background: transparent !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important; /* Clean separator line */
+}
+
+/* 3. FORCES THE GOOGLE TEXT TO BE PURE WHITE AND READABLE */
+.cl-socialButtonsBlockButtonText,
+div[class*="socialButtonsBlockButtonText"],
+button[class*="cl-socialButtonsBlockButton"] * {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+}
+
+/* 4. Tints the Google Button frame slightly so it catches the light beautifully */
+.cl-socialButtonsBlockButton,
+button[class*="cl-socialButtonsBlockButton"] {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  transition: all 0.2s ease !important;
+}
+
+.cl-socialButtonsBlockButton:hover {
+  background-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+/* 5. Clean up Clerk's bottom brand attribution color */
+.cl-clerkProviderSign {
+  color: rgba(255, 255, 255, 0.4) !important;
+} */
+
+/*New CSS FOR NavBar and Profile Changes*/
+
+/* Color Palette Config & Scopes */
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  
+  /* Light Theme Defaults */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --border-color: #e5e7eb;
+  --accent-color: #1d9e75;
+}
+
+.theme-dark {
+  /* Dark Theme Overrides */
+  --bg-primary: #111827;
+  --bg-secondary: #1f2937;
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --border-color: #374151;
+  --accent-color: #34d399;
+}
+
+/* Base resets for clean layouts */
+body {
+  margin: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Accessibility: Screen Reader Only Utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Smooth Navigation Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
