@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 
 export const API_BASE = import.meta.env.VITE_API_URL || "";
-export const USER_ID = "demo_user";
+// export const USER_ID = "demo_user";
 
 export const KES = (n) => `KES ${Math.round(n).toLocaleString()}`;
 

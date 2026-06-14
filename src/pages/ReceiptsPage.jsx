@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { KES } from "../constants";
 import { uploadReceiptPhoto, lookupBarcode } from "../utils";
+import { useAuth } from "@clerk/clerk-react";
 
 export default function ReceiptsPage() {
   const [scanMode, setScanMode] = useState("idle");
@@ -31,6 +32,8 @@ export default function ReceiptsPage() {
       setReceiptFile
     );
   };
+
+  const { getToken } = useAuth();
 
   return (
     <>
@@ -326,7 +329,7 @@ export default function ReceiptsPage() {
           </div>
           <button
             onClick={() =>
-              lookupBarcode(barcodeInput, setScanMode, setBarcodeResult)
+              lookupBarcode(barcodeInput, setScanMode, setBarcodeResult, getToken)
             }
             disabled={scanMode === "loading" || !barcodeInput.trim()}
             style={{

@@ -27,6 +27,7 @@ import {
   Eye,
   EyeOff,
   PlusCircle,
+  Database,
 } from "lucide-react";
 import { COLORS, KES } from "../constants";
 import {
@@ -36,6 +37,7 @@ import {
   fetchInsights,
   renderCategoryIcon,
 } from "../utils";
+import { useAuth } from "@clerk/clerk-react";
 
 const initialData = generateData();
 
@@ -98,12 +100,14 @@ export default function DashboardPage() {
   const [period, setPeriod] = useState("30d");
   const [insightLoading, setInsightLoading] = useState(false);
   const [insight, setInsight] = useState(null);
-  
-  // FIXED: Moved state string initialization inside the component body 
-  // Options: "empty" | "preview" | "live"
-  const [dashboardState, setDashboardState] = useState("empty"); 
+  const [isLoading, setIsLoading] = useState(false);
 
-  // FIXED: Removed conflicting redundant `isPreviewMode` boolean tracking structures
+  const { getToken } = useAuth();
+  
+  // OPTIMIZATION: Updated default baseline state straight to "live" 
+  // so users see their uploaded voice and receipt documents immediately.
+  const [dashboardState, setDashboardState] = useState("live"); 
+
   const isPreviewMode = dashboardState === "preview";
 
   const [summary, setSummary] = useState({
@@ -116,30 +120,54 @@ export default function DashboardPage() {
   const [chartData, setChartData] = useState(zeroStateData.chartData);
   const [pieData, setPieData] = useState(zeroStateData.pieData);
 
-  // Determine current working data baseline based on unified 3-state system
   const currentBaseline = dashboardState === "preview" ? initialData : zeroStateData;
-
   const { healthScore, healthLabel, healthColor } = buildHealth(summary, currentBaseline);
+  
   const profitMargin =
     summary.totalIncome > 0
       ? Math.round((summary.netProfit / summary.totalIncome) * 100)
       : 0;
 
-  // FIXED: Combined unified standalone state handling watcher effect inside component body
+  // OPTIMIZATION: Fully integrated live endpoint binding hook
   useEffect(() => {
+    let isMounted = true;
+
     if (dashboardState === "preview") {
-      loadDashboard(
-        period, 
-        setSummary, 
-        setChartData, 
-        setPieData, 
-        () => {}, 
-        initialData
-      );
+      setSummary({
+        totalIncome: initialData.totalIncome || 125000, 
+        totalExpenses: initialData.totalExpenses || 45000,
+        netProfit: (initialData.totalIncome || 125000) - (initialData.totalExpenses || 45000),
+        profitMargin: Math.round(((125000 - 45000) / 125000) * 100),
+        transactionCount: initialData.transactions?.length || 12,
+      });
+      setChartData(initialData.chartData || []);
+      setPieData(initialData.pieData || []);
+      setInsight(null);
+
     } else if (dashboardState === "live") {
-      // Future Integration: loadDashboard(period, setSummary, setChartData, setPieData, () => {}, realUserData);
+      const fetchLiveDashboardData = async () => {
+        if (!isMounted) return;
+        setIsLoading(true);
+        try {
+          // Triggers your utilities framework to query live background aggregates
+          await loadDashboard(
+            period,
+            (data) => isMounted && setSummary(data),
+            (data) => isMounted && setChartData(data),
+            (data) => isMounted && setPieData(data),
+            (loadingState) => isMounted && setIsLoading(loadingState),
+            null, // Pass null so it bypasses mock stubs and requests real data
+            getToken
+          );
+        } catch (error) {
+          console.error("Dashboard synchronization connection lost:", error);
+        } finally {
+          if (isMounted) setIsLoading(false);
+        }
+      };
+
+      fetchLiveDashboardData();
     } else {
-      // "empty" state resets everything back to perfect zero parameters
       setSummary({
         totalIncome: zeroStateData.totalIncome,
         totalExpenses: zeroStateData.totalExpense,
@@ -151,7 +179,19 @@ export default function DashboardPage() {
       setPieData(zeroStateData.pieData);
       setInsight(null);
     }
-  }, [period, dashboardState]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [period, dashboardState, getToken]);
+
+  // OPTIMIZATION: Fetch live dynamic insights from Gemini based on real metrics
+  useEffect(() => {
+    if (dashboardState === "live") {
+      setInsight(null);
+      fetchInsights(period, setInsightLoading, setInsight, healthLabel, getToken);
+    }
+  }, [period, dashboardState, healthLabel, getToken]);
 
   return (
     <>
@@ -169,17 +209,19 @@ export default function DashboardPage() {
           <p style={{ margin: "4px 0 0 0", fontSize: 12, color: "var(--text-secondary)" }}>
             {dashboardState === "preview" && "Viewing mock transactional dashboard preview"}
             {dashboardState === "empty" && "No transaction pipelines loaded"}
-            {dashboardState === "live" && "Real-time production ledger values"}
+            {dashboardState === "live" && (isLoading ? "Refreshing records..." : "Real-time production ledger values")}
           </p>
         </div>
 
-        {/* Dynamic 3-State Demo & Production Controller Button */}
+        {/* OPTIMIZATION: Linear state shifter (Live -> Preview -> Empty -> Live) */}
         <button
           onClick={() => {
-            if (dashboardState === "empty") {
+            if (dashboardState === "live") {
               setDashboardState("preview");
             } else if (dashboardState === "preview") {
               setDashboardState("empty");
+            } else {
+              setDashboardState("live");
             }
           }}
           style={{
@@ -208,8 +250,8 @@ export default function DashboardPage() {
         >
           {dashboardState === "empty" && (
             <>
-              <Eye style={{ width: 15, height: 15 }} />
-              Preview Demo Visuals
+              <Database style={{ width: 15, height: 15 }} />
+              Switch to Live Production
             </>
           )}
 
@@ -223,7 +265,7 @@ export default function DashboardPage() {
           {dashboardState === "live" && (
             <>
               <CheckCircle style={{ width: 15, height: 15 }} />
-              Viewing Live Uploads
+              Live Ledger Active
             </>
           )}
         </button>
@@ -328,9 +370,9 @@ export default function DashboardPage() {
           <span style={{
             fontSize: 14,
             fontWeight: 600,
-            color: chartData.length === 0 ? "var(--text-tertiary)" : healthColor,
+            color: summary.transactionCount === 0 ? "var(--text-tertiary)" : healthColor,
           }}>
-            {chartData.length === 0 ? "No Transactions Added" : `${healthScore}/100 · ${healthLabel}`}
+            {summary.transactionCount === 0 ? "No Transactions Added" : `${healthScore}/100 · ${healthLabel}`}
           </span>
         </div>
 
@@ -342,8 +384,8 @@ export default function DashboardPage() {
         }}>
           <div style={{
             height: "100%",
-            width: chartData.length === 0 ? "0%" : `${healthScore}%`,
-            background: chartData.length === 0 ? "var(--text-tertiary)" : healthColor,
+            width: summary.transactionCount === 0 ? "0%" : `${healthScore}%`,
+            background: summary.transactionCount === 0 ? "var(--text-tertiary)" : healthColor,
             borderRadius: 6,
             transition: "width 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
           }} />
@@ -472,12 +514,11 @@ export default function DashboardPage() {
                     dataKey="date"
                     tick={{ fontSize: 10, fill: "var(--text-tertiary)" }}
                     tickLine={false}
-                    interval={4}
                   />
                   <YAxis
                     tick={{ fontSize: 10, fill: "var(--text-tertiary)" }}
                     tickLine={false}
-                    tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                    tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Area
@@ -517,12 +558,11 @@ export default function DashboardPage() {
                     dataKey="date"
                     tick={{ fontSize: 10, fill: "var(--text-tertiary)" }}
                     tickLine={false}
-                    interval={4}
                   />
                   <YAxis
                     tick={{ fontSize: 10, fill: "var(--text-tertiary)" }}
                     tickLine={false}
-                    tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                    tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="income" fill={COLORS.income} radius={[2, 2, 0, 0]} />
@@ -627,7 +667,7 @@ export default function DashboardPage() {
                         textTransform: "capitalize",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
+ whiteSpace: "nowrap",
                       }}>
                         {p.name}
                       </span>
@@ -669,22 +709,22 @@ export default function DashboardPage() {
           </div>
           {!insight && (
             <button
-              onClick={() => fetchInsights(period, setInsightLoading, setInsight, healthLabel)}
-              disabled={insightLoading || !isPreviewMode}
+              onClick={() => fetchInsights(period, setInsightLoading, setInsight, healthLabel, getToken)}
+              disabled={insightLoading || isPreviewMode}
               style={{
                 background: "var(--bg-primary)",
                 border: "1px solid var(--border-color)",
                 borderRadius: 8,
                 padding: "6px 14px",
                 fontSize: 12,
-                cursor: (!isPreviewMode || insightLoading) ? "not-allowed" : "pointer",
+                cursor: (isPreviewMode || insightLoading) ? "not-allowed" : "pointer",
                 color: "var(--text-secondary)",
                 fontWeight: 500,
                 display: "flex",
                 alignItems: "center",
                 gap: 4,
                 transition: "opacity 0.2s",
-                opacity: (!isPreviewMode || insightLoading) ? 0.5 : 1
+                opacity: (isPreviewMode || insightLoading) ? 0.5 : 1
               }}
             >
               {insightLoading ? "Analyzing..." : "Generate"}
@@ -698,8 +738,8 @@ export default function DashboardPage() {
             margin: 0,
             lineHeight: 1.5,
           }}>
-            {!isPreviewMode 
-              ? "Gemini analysis requires active log streams. Switch on the demo pipeline above to preview structural metrics."
+            {isPreviewMode 
+              ? "Gemini analysis requires active log streams. Switch on the live pipeline to preview dynamic structural metrics."
               : "Get a comprehensive real-time financial health analysis powered directly by Gemini."}
           </p>
         )}
@@ -725,7 +765,7 @@ export default function DashboardPage() {
             }}>Gemini is scanning transaction metrics...</span>
           </div>
         )}
-        {insight && isPreviewMode && (
+        {insight && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <p style={{
               fontSize: 13,
