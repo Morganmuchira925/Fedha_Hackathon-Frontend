@@ -1,3 +1,4 @@
+/* UPDATED LAYOUT COMPONENT */
 import { useLocation, Link } from "react-router-dom";
 import { UserButton } from "@clerk/clerk-react";
 import { Wallet, Sun, Moon } from "lucide-react";
@@ -8,11 +9,10 @@ export default function Layout({ children, darkMode, setDarkMode }) {
 
   return (
     <div className={`app-theme-container ${darkMode ? "theme-dark" : "theme-light"}`}>
-      {/* Global CSS Overrides for Responsive Behavior and Tooltips */}
+      {/* Global CSS Overrides */}
       <style>{`
         ${THEME_STYLES}
         
-        /* Tooltip Core Styling */
         .nav-tooltip {
           position: relative;
         }
@@ -40,34 +40,42 @@ export default function Layout({ children, darkMode, setDarkMode }) {
           transform: translateX(-50%) scale(1);
         }
 
-        /* Responsive Breakpoints using rem */
-        @media (max-width: 48rem) { /* ~768px Tablet down */
-          .brand-text {
-            display: none !important;
-          }
-          .nav-link-text {
-            display: none !important;
-          }
-          .nav-container {
-            gap: 0.5rem !important;
-          }
-          .navbar-wrapper {
-            padding: 0.5rem 0.75rem !important;
-          }
+        /* Tablet Viewports */
+        @media (max-width: 48rem) { 
+          .brand-text { display: none !important; }
+          .nav-link-text { display: none !important; }
+          .nav-container { gap: 0.5rem !important; }
+          .navbar-wrapper { padding: 0.5rem 0.75rem !important; }
         }
 
-        @media (max-width: 30rem) { /* ~480px Mobile down */
+        /* Mobile Viewports Fix: Repositions center links and anchors the Profile icon */
+        @media (max-width: 34rem) {
           .navbar-wrapper {
-            flex-direction: row !important;
-            justifyContent: space-between !important;
+            flex-wrap: wrap !important;
+            padding: 0.75rem !important;
+            gap: 0.75rem !important;
+          }
+          
+          /* Forces center nav-container onto its own full-width row below the logo and profile */
+          .nav-container {
+            order: 3 !important;
+            width: 100% !important;
+            justify-content: space-around !important;
+            margin-top: 0.25rem;
+          }
+
+          .nav-tooltip {
+            flex: 1 !important;
+            justify-content: center !important;
+            padding: 0.5rem !important;
           }
         }
       `}</style>
 
       <div style={{
         fontFamily: "var(--font-sans)",
-        padding: "1rem 1rem 3rem",
-        maxWidth: "47.5rem", /* 760px */
+        padding: "1rem 2rem 3rem",
+        maxWidth: "90rem", 
         margin: "0 auto",
         minHeight: "100vh",
         color: "var(--text-primary)",
@@ -75,30 +83,23 @@ export default function Layout({ children, darkMode, setDarkMode }) {
         transition: "background 0.2s ease, color 0.2s ease",
       }}>
         
-        {/* Combined Unified Navbar Wrapper */}
+        {/* Navbar */}
         <nav className="navbar-wrapper" style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "0.625rem 0.875rem", /* 10px 14px */
+          padding: "0.625rem 0.875rem",
           background: "var(--bg-secondary)",
           border: "0.0625rem solid var(--border-color)",
-          borderRadius: "1rem", /* 16px */
+          borderRadius: "1rem",
           marginBottom: "2rem",
           gap: "1rem",
         }}>
           
-          {/* Brand Identity */}
+          {/* Brand Ingestion Logo */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
             <div style={{ 
-              width: "2.125rem", /* 34px */
-              height: "2.125rem", 
-              borderRadius: "0.5rem", /* 8px */
-              background: "#1D9E75", 
-              display: "flex", 
-              alignItems: "center", 
-              justifyContent: "center", 
-              color: "#fff" 
+              width: "2.125rem", height: "2.125rem", borderRadius: "0.5rem", background: "#1D9E75", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" 
             }}>
               <Wallet style={{ width: "1.125rem", height: "1.125rem" }} />
             </div>
@@ -107,40 +108,18 @@ export default function Layout({ children, darkMode, setDarkMode }) {
             </span>
           </div>
 
-          {/* Centered Pill Navigation Links */}
+          {/* Navigation Link Segment Container */}
           <div className="nav-container" style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.375rem", /* 6px */
-            background: "var(--bg-primary)",
-            padding: "0.25rem", /* 4px */
-            borderRadius: "0.75rem", /* 12px */
-            border: "0.0625rem solid var(--border-color)",
+            display: "flex", alignItems: "center", gap: "0.375rem", background: "var(--bg-primary)", padding: "0.25rem", borderRadius: "0.75rem", border: "0.0625rem solid var(--border-color)",
           }}>
             {NAV_ITEMS?.map(({ key, label, Icon }) => {
               const targetPath = key === "dashboard" ? "/dashboard" : `/dashboard/${key}`;
               const isActive = location.pathname === targetPath || location.pathname.startsWith(`${targetPath}/`);
 
               return (
-                <Link
-                  key={key}
-                  to={targetPath}
-                  className="nav-tooltip"
-                  data-label={label}
-                  style={{
-                    padding: "0.375rem 0.75rem", /* 6px 12px */
-                    fontSize: "0.78rem",
-                    textDecoration: "none",
-                    fontWeight: isActive ? 600 : 500,
-                    color: isActive ? "#fff" : "var(--text-secondary)",
-                    background: isActive ? "#1D9E75" : "transparent",
-                    borderRadius: "0.5rem", /* 8px */
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.375rem",
-                    transition: "all 0.15s ease"
-                  }}
-                >
+                <Link key={key} to={targetPath} className="nav-tooltip" data-label={label} style={{
+                  padding: "0.375rem 0.75rem", fontSize: "0.78rem", textDecoration: "none", fontWeight: isActive ? 600 : 500, color: isActive ? "#fff" : "var(--text-secondary)", background: isActive ? "#1D9E75" : "transparent", borderRadius: "0.5rem", display: "flex", alignItems: "center", gap: "0.375rem", transition: "all 0.15s ease"
+                }}>
                   <Icon style={{ width: "0.875rem", height: "0.875rem" }} />
                   <span className="nav-link-text">{label}</span>
                 </Link>
@@ -148,38 +127,17 @@ export default function Layout({ children, darkMode, setDarkMode }) {
             })}
           </div>
 
-          {/* Action Tools & Profile Controls */}
+          {/* Action Controllers + Profile Icon Wrapper */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              style={{
-                background: "var(--bg-primary)", 
-                border: "0.0625rem solid var(--border-color)",
-                padding: "0.4375rem", /* 7px */
-                borderRadius: "50%", 
-                cursor: "pointer", 
-                display: "flex", 
-                color: "var(--text-secondary)",
-                alignItems: "center",
-                justifyContent: "center"
-              }}
-            >
+            <button onClick={() => setDarkMode(!darkMode)} style={{ background: "var(--bg-primary)", border: "0.0625rem solid var(--border-color)", padding: "0.4375rem", borderRadius: "50%", cursor: "pointer", display: "flex", color: "var(--text-secondary)", alignItems: "center", justifyContent: "center" }}>
               {darkMode ? <Sun style={{ width: "0.875rem", height: "0.875rem" }} className="text-amber-400" /> : <Moon style={{ width: "0.875rem", height: "0.875rem" }} />}
             </button>
-
-            <div style={{ 
-              display: "flex", 
-              alignItems: "center",
-              borderLeft: "0.0625rem solid var(--border-color)",
-              paddingLeft: "0.75rem",
-              height: "1.5rem"
-            }}>
+            <div style={{ display: "flex", alignItems: "center", borderLeft: "0.0625rem solid var(--border-color)", paddingLeft: "0.75rem", height: "1.5rem" }}>
               <UserButton afterSignOutUrl="/" />
             </div>
           </div>
         </nav>
 
-        {/* Interior Page Render Target */}
         <div style={{ animation: "fadeIn 0.2s ease", padding: "0 0.25rem" }}>
           {children}
         </div>
